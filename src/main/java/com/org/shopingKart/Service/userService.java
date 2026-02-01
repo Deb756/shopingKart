@@ -2,6 +2,7 @@ package com.org.shopingKart.Service;
 
 import com.org.shopingKart.entity.Users;
 import com.org.shopingKart.repository.userRepo;
+import org.apache.catalina.User;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -65,5 +66,20 @@ public class userService {
         userRepo.deleteById(id);
         return true;
     }
+
+    public Boolean existByemail(String email) {
+        return userRepo.findByEmail(email) != null;
+    }
+
+    public Users login(String email, String password) {
+        if (existByemail(email)) {
+            Users users = userRepo.findByEmail(email);
+            if (users.getPassword().equals(password)) {
+                return users;
+            }
+        }
+        return null;
+    }
+
 
 }

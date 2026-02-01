@@ -2,6 +2,10 @@ package com.org.shopingKart.controller;
 
 import com.org.shopingKart.Service.userService;
 import com.org.shopingKart.entity.Users;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -50,5 +54,34 @@ public class userController {
         Boolean isRemoved = userService.delete(userId);
         return isRemoved ? ResponseEntity.ok(true) : ResponseEntity.notFound().build();
     }
+
+
+    @PostMapping("/login")
+    public ResponseEntity<Users> login(@RequestParam String email, @RequestParam String password, HttpSession session) {
+        Users user = userService.login(email, password);
+        if (user == null) {
+            return ResponseEntity.status(401).build(); // Unauthorized
+        }
+        // Store user in session
+        session.setAttribute("userId", user.getId().toString());
+        session.setAttribute("userRole", user.getRole());
+        return ResponseEntity.ok(user);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+
+        Cookie cookie = new Cookie("JSESSIONID", null);
+        cookie.setPath("/");
+        cookie.setMaxAge(0); // delete cookie
+        response.addCookie(cookie);
+
+        return ResponseEntity.ok().build();
+    }
+
 
 }
