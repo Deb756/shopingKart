@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Save Product</title>
+</head>
+<body>
+<h2>Add New Product</h2>
+<form id="productForm" enctype="multipart/form-data">
+    <label>Title:</label><br>
+    <input type="text" name="title" required><br><br>
+
+    <label>Description:</label><br>
+    <textarea name="description" required></textarea><br><br>
+
+    <label>Category:</label><br>
+    <input type="text" name="category" required><br><br>
+
+    <label>Price:</label><br>
+    <input type="number" name="price" step="0.01" required><br><br>
+
+    <label>Stock:</label><br>
+    <input type="number" name="stock" required><br><br>
+
+    <label>Discount (%):</label><br>
+    <input type="number" name="discount" required><br><br>
+
+    <label>Product Image:</label><br>
+    <input type="file" name="image" accept="image/*" required><br><br>
+
+    <button type="submit">Save Product</button>
+</form>
+
+<p id="response"></p>
+
+<script>
+    const form = document.getElementById("productForm");
+    const responseEl = document.getElementById("response");
+
+    form.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const formData = new FormData();
+
+        // Build product JSON
+        const product = {
+            title: form.title.value,
+            description: form.description.value,
+            category: form.category.value,
+            price: parseFloat(form.price.value),
+            stock: parseInt(form.stock.value),
+            discount: parseInt(form.discount.value)
+        };
+
+        // Append JSON as a Blob
+        formData.append("product", new Blob([JSON.stringify(product)], { type: "application/json" }));
+
+        // Append image file
+        formData.append("image", form.image.files[0]);
+
+        // Send request to backend
+        fetch("http://localhost:8080/api/products", {
+            method: "POST",
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            responseEl.textContent = "Product saved successfully! ID: " + data.id;
+        })
+        .catch(err => {
+            console.error(err);
+            responseEl.textContent = "Error saving product: " + err.message;
+        });
+    });
+</script>
+</body>
+</html>

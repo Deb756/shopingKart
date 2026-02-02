@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Update Product</title>
+</head>
+<body>
+<h2>Update Product</h2>
+<form id="updateForm" enctype="multipart/form-data">
+    <label>Product ID:</label><br>
+    <input type="text" name="id" required><br><br>
+
+    <label>Title:</label><br>
+    <input type="text" name="title"><br><br>
+
+    <label>Description:</label><br>
+    <textarea name="description"></textarea><br><br>
+
+    <label>Category:</label><br>
+    <input type="text" name="category"><br><br>
+
+    <label>Price:</label><br>
+    <input type="number" name="price" step="0.01"><br><br>
+
+    <label>Stock:</label><br>
+    <input type="number" name="stock"><br><br>
+
+    <label>Discount (%):</label><br>
+    <input type="number" name="discount"><br><br>
+
+    <label>Product Image (optional):</label><br>
+    <input type="file" name="image" accept="image/*"><br><br>
+
+    <button type="submit">Update Product</button>
+</form>
+
+<p id="response"></p>
+
+<script>
+    const form = document.getElementById("updateForm");
+    const responseEl = document.getElementById("response");
+
+    form.addEventListener("submit", function(e) {
+        e.preventDefault();
+
+        const productId = form.id.value.trim();
+        if (!productId) {
+            responseEl.textContent = "Product ID is required!";
+            return;
+        }
+
+        // Build product JSON with optional fields
+        const product = {
+            title: form.title.value || null,
+            description: form.description.value || null,
+            category: form.category.value || null,
+            price: form.price.value ? parseFloat(form.price.value) : null,
+            stock: form.stock.value ? parseInt(form.stock.value) : null,
+            discount: form.discount.value ? parseInt(form.discount.value) : null
+        };
+
+        const formData = new FormData();
+        formData.append("product", new Blob([JSON.stringify(product)], { type: "application/json" }));
+
+        const imageFile = form.image.files[0];
+        if (imageFile) {
+            formData.append("image", imageFile);
+        }
+
+        fetch(`http://localhost:8080/api/products/${productId}`, {
+            method: "PUT",
+            body: formData
+        })
+        .then(res => {
+            if (!res.ok) throw new Error("Failed to update product");
+            return res.json();
+        })
+        .then(data => {
+            responseEl.textContent = "Product updated successfully! ID: " + data.id;
+        })
+        .catch(err => {
+            console.error(err);
+            responseEl.textContent = "Error: " + err.message;
+        });
+    });
+</script>
+</body>
+</html>
